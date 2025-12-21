@@ -16,5 +16,12 @@ router.post('/',
 )
 router.get('/', userController.readAllUsers);
 router.get('/:user_id', userController.readUserById);
+router.put('/:user_id', 
+    userController.checkIdexist,
+    userController.checkDuplicateusername,
+    userController.updateUserbyId,
+    userController.printupdatedUser
+
+);
 
 module.exports = router;

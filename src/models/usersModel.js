@@ -58,3 +58,37 @@ const VALUES = [data.userId];
 
 pool.query(SQLSTATMENT, VALUES, callback);
 }
+
+module.exports.findByUsername2 = (data, callback) =>
+{
+const SQLSTATMENT = `
+    SELECT *
+    FROM user
+    WHERE username = ? AND user_id != ?;
+    `;
+const VALUES = [data.userName, data.userId];
+pool.query(SQLSTATMENT, VALUES, callback);
+
+}
+
+module.exports.updateUser = (data, callback) =>
+{
+const SQLSTATMENT = `
+    UPDATE user
+    SET username = ?, points = ? WHERE user_id = ?;
+    `;
+const VALUES = [data.userName,data.points, data.userId];
+pool.query(SQLSTATMENT, VALUES, callback);
+}
+
+module.exports.printupdatedUser = (data, callback) =>
+{
+    const SQLSTATMENT = `
+    SELECT user_id, username, points
+    FROM user
+    WHERE user_id = ?;
+    `;
+const VALUES = [data.userId];
+
+pool.query(SQLSTATMENT, VALUES, callback);
+}
