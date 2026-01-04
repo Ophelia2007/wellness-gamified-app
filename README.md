@@ -89,7 +89,7 @@ BED-CA1-OPHELIA2007/
 ```
    DB_HOST=localhost
    DB_USER=root
-   DB_PASSWORD=yourpassword (mine is DAAA-1B-03)
+   DB_PASSWORD=yourpassword
    DB_NAME=wellness
 ```
 
