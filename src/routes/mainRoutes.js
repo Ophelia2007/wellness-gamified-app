@@ -1,13 +1,19 @@
-
 const express = require('express');
 const router = express.Router();
 
+// Import individual route modules (sub-routers)
 const challengesRoutes = require('./challengesRoutes.js');
 const usersRoutes = require('./usersRoutes.js');
 const completionRoutes = require('./completionRoutes.js');
+const gardenRoutes = require('./gardenRoutes.js');
+const plantRoutes = require('./plantRoutes.js');
 
-router.use("/challenges", challengesRoutes);
-router.use("/users", usersRoutes);
-router.use("/challenges", completionRoutes);
+// Assigns specific URL prefixes to each router
+router.use("/challenges", challengesRoutes); // Routes for challenge management
+router.use("/users", usersRoutes);           // Routes for user profiles/accounts
+router.use("/challenges", completionRoutes); // Additional challenge logic (e.g., finishing a task)
+router.use('/garden', gardenRoutes);
+router.use('/plants', plantRoutes)
 
+// Exports the combined router to the main server file
 module.exports = router;

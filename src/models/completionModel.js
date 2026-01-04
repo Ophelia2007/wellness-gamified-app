@@ -4,26 +4,10 @@
 const pool = require('../services/db');
 
 // ##############################################################
-// CHECK IF USER EXISTS
-// ##############################################################
-module.exports.checkUserExists = (data, callback) => {
-  const SQLSTATEMENT = `SELECT user_id FROM user WHERE user_id = ?;`;
-  const VALUES = [data.userId];
-  pool.query(SQLSTATEMENT, VALUES, callback);
-};
-
-// ##############################################################
-// CHECK IF CHALLENGE EXISTS AND GET POINTS
-// ##############################################################
-module.exports.checkChallengeExists = (data, callback) => {
-  const SQLSTATEMENT = `SELECT challenge_id, points FROM wellnesschallenge WHERE challenge_id = ?;`;
-  const VALUES = [data.challengeId];
-  pool.query(SQLSTATEMENT, VALUES, callback);
-};
-
-// ##############################################################
 // INSERT COMPLETION RECORD
 // ##############################################################
+
+// Adds a record to 'usercompletion' when a user finishes a challenge
 module.exports.insertSingle = (data, callback) => {
   const SQLSTATEMENT = `
     INSERT INTO usercompletion (challenge_id, user_id, details)
@@ -34,17 +18,10 @@ module.exports.insertSingle = (data, callback) => {
 };
 
 // ##############################################################
-// AWARD POINTS TO USER
-// ##############################################################
-module.exports.awardPoints = (data, callback) => {
-  const SQLSTATEMENT = `UPDATE user SET points = points + ? WHERE user_id = ?;`;
-  const VALUES = [data.points, data.userId];
-  pool.query(SQLSTATEMENT, VALUES, callback);
-};
-
-// ##############################################################
 // RETRIEVE COMPLETION RECORD
 // ##############################################################
+
+// Fetches a specific completion record by its primary key ID
 module.exports.printCompletionRecord = (data, callback) => {
   const SQLSTATEMENT = `
     SELECT completion_id as complete_id, challenge_id, user_id, details
@@ -58,6 +35,8 @@ module.exports.printCompletionRecord = (data, callback) => {
 // ##############################################################
 // GET ALL USERS WHO ATTEMPTED A CHALLENGE
 // ##############################################################
+
+// Retrieves a list of users and their submission details for a specific challenge
 module.exports.getUsersByChallengeId = (data, callback) => {
   const SQLSTATEMENT = `
     SELECT user_id, details
@@ -65,5 +44,20 @@ module.exports.getUsersByChallengeId = (data, callback) => {
     WHERE challenge_id = ?;
   `;
   const VALUES = [data.challengeId];
+  pool.query(SQLSTATEMENT, VALUES, callback);
+};
+
+// ##############################################################
+// CHECK USER COMPLETION BY CHALLENGE ID
+// ##############################################################
+
+// Used to check if ANY users have completed a challenge (often for validation before deletion)
+module.exports.checkUserCompletionByChallengeId = (data, callback) => {
+  const SQLSTATEMENT = `
+    SELECT * FROM usercompletion
+    WHERE challenge_id = ?;
+  `;
+  const VALUES = [data.challengeId];
+
   pool.query(SQLSTATEMENT, VALUES, callback);
 };
