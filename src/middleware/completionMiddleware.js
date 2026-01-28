@@ -5,7 +5,7 @@ const usersModel = require("../models/usersModel");
 // Step 1: Check if user exists
 module.exports.checkUser = (req, res, next) => {
   // Validate that user_id and details exist in request body
-  if (!req.body.user_id || !req.body.details) {
+  if (!req.body.user_id) {
     return res.status(400).send({
       message: "Missing required data."
     });
@@ -51,6 +51,7 @@ module.exports.checkChallenge = (req, res, next) => {
 
     // Store points earned from this challenge to award later
     req.challengePoints = results[0].points;
+    req.challengeDescription = results[0].description;
     next();
   };
 

@@ -10,18 +10,30 @@ const pool = require('../services/db');
 // CREATE: Insert a new user with just a username
 module.exports.insertSingle = (data, callback) => {
   const SQLSTATMENT = `
-    INSERT INTO user (username)
-    VALUES (?);
+    INSERT INTO user (username, email, password)
+    VALUES (?,?,?);
   `;
-  const VALUES = [data.userName];
+  const VALUES = [data.userName, data.email, data.password];
 
   pool.query(SQLSTATMENT, VALUES, callback);
 };
 
-// READ: Check if a username is taken (Dynamic query to exclude current user if needed)
 module.exports.findByUsername = (data, callback) => {
   let SQLSTATMENT = 'SELECT * FROM user WHERE username = ?';
   const VALUES = [data.userName];
+
+  if (data.userId) {
+    SQLSTATMENT += ' AND user_id != ?';
+    VALUES.push(data.userId);
+  }
+
+  pool.query(SQLSTATMENT, VALUES, callback);
+};
+
+//Check if email exists
+module.exports.checkEmailExists = (data, callback) => {
+  let SQLSTATMENT = 'SELECT * FROM user WHERE email = ?';
+  const VALUES = [data.email];
   
   // If a userId is provided, exclude it from the search (used for updates)
   if (data.userId) {
@@ -55,7 +67,7 @@ module.exports.selectAll = (callback) => {
 // READ ONE: Get specific user details by ID
 module.exports.selectById = (data, callback) => {
   const SQLSTATMENT = `
-    SELECT user_id, username, points FROM user
+    SELECT user_id, username, email, points, created_at FROM user
     WHERE user_id = ?;
   `;
   const VALUES = [data.userId];

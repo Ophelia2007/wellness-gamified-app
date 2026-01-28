@@ -1,6 +1,66 @@
 const gardenModel = require("../models/gardenModel");
 
 // ##############################################################
+// CHECK GARDEN OWNERSHIP
+// ##############################################################
+module.exports.checkGardenOwnership = (req, res, next) => {
+    const gardenId = req.params.garden_id;
+    const loggedInUserId = req.user.user_id; // From JWT token
+    
+    if (!gardenId) {
+        return res.status(400).json({
+            message: "Garden ID is required"
+        });
+    }
+    
+    // Get plant info to check ownership
+    const data = { gardenId };
+    
+    const callback = (error, results, fields) => {
+        if (error) {
+            console.error("Error checking garden ownership:", error);
+            return res.status(500).json(error);
+        }
+        
+        if (results.length === 0) {
+            return res.status(404).json({
+                message: "Plant not found in garden"
+            });
+        }
+        
+        const plant = results[0];
+        
+        // Check if logged-in user owns this plant
+        if (plant.user_id !== loggedInUserId) {
+            return res.status(403).json({
+                message: "Forbidden: You don't own this plant. You can only water your own plants!"
+            });
+        }
+        
+        // Ownership verified!
+        next();
+    };
+    
+    gardenModel.getPlantById(data, callback);
+};
+
+// ##############################################################
+// VERIFY USER VIEWING OWN GARDEN
+// ##############################################################
+module.exports.verifyGardenAccess = (req, res, next) => {
+    const requestedUserId = parseInt(req.params.user_id);
+    const loggedInUserId = req.user.user_id; // From JWT token
+    
+    if (requestedUserId !== loggedInUserId) {
+        return res.status(403).json({
+            message: "Forbidden: You can only view your own garden!"
+        });
+    }
+    
+    next();
+};
+
+// ##############################################################
 // PLANT A NEW SEED (with validation)
 // ##############################################################
 module.exports.checkPlantUnlock = (req, res, next) => {

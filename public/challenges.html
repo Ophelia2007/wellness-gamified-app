@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Challenges - Wellness Garden</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="navbar">
+      <a href="dashboard.html" class="navbar-brand">🌱 Wellness Garden</a>
+      <div class="navbar-menu">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="garden.html">My Garden</a>
+        <a href="plants.html">Plant Catalog</a>
+        <a href="challenges.html">Challenges</a>
+        <button class="btn btn-logout btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <h1 style="color: var(--deep-forest); margin-bottom: 15px">
+          🎯 Wellness Challenges
+        </h1>
+        <p style="color: var(--charcoal); line-height: 1.6">
+          Complete challenges to earn points and grow your garden!
+        </p>
+
+        <button
+          class="btn btn-success"
+          onclick="showCreateForm()"
+          style="margin: 20px 0"
+        >
+          + Create New Challenge
+        </button>
+
+        <!-- Create Challenge Form (Hidden by default) -->
+        <div
+          id="createForm"
+          class="hidden info-box"
+          style="margin-bottom: 25px"
+        >
+          <h3 style="color: var(--deep-forest); margin-bottom: 20px">
+            Create New Challenge
+          </h3>
+          <div class="form-group">
+            <label for="description">Challenge Description</label>
+            <textarea
+              id="description"
+              class="form-control"
+              rows="3"
+              placeholder="E.g., Drink 8 glasses of water today"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="points">Points Reward</label>
+            <input
+              type="number"
+              id="points"
+              class="form-control"
+              placeholder="E.g., 50"
+              min="1"
+            />
+          </div>
+          <div style="display: flex; gap: 10px">
+            <button class="btn btn-primary" onclick="createChallenge()">
+              Create Challenge
+            </button>
+            <button class="btn btn-secondary" onclick="hideCreateForm()">
+              Cancel
+            </button>
+          </div>
+        </div>
+
+        <div id="challengesList">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/challenges.js"></script>
+    <script>
+      checkAuth();
+      loadChallenges();
+    </script>
+    <footer class="wellness-footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-logo">🌱 Wellness Garden</h3>
+          <p class="footer-tagline">Grow your health, bloom your life</p>
+          <div class="footer-social">
+            <a href="#" class="social-link" title="Instagram">📷</a>
+            <a href="#" class="social-link" title="Twitter">🐦</a>
+            <a href="#" class="social-link" title="Facebook">📘</a>
+            <a href="#" class="social-link" title="Email">📧</a>
+          </div>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="garden.html">My Garden</a></li>
+            <li><a href="plants.html">Plant Catalog</a></li>
+            <li><a href="challenges.html">Challenges</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="#">Wellness Tips</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Support</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Stay Connected</h4>
+          <p class="footer-text">Get wellness tips and updates!</p>
+          <div class="footer-newsletter">
+            <input
+              type="email"
+              placeholder="Your email"
+              class="newsletter-input"
+            />
+            <button class="newsletter-btn">Subscribe</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">
+          © 2026 Wellness Garden. Made with 💚 for your wellness journey
+        </p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Policy</a>
+          <span class="separator">•</span>
+          <a href="#">Terms of Service</a>
+          <span class="separator">•</span>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

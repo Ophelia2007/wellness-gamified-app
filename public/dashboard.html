@@ -1,0 +1,654 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dashboard - Wellness Garden</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="navbar">
+      <a href="dashboard.html" class="navbar-brand">🌱 Wellness Garden</a>
+      <div class="navbar-menu">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="garden.html">My Garden</a>
+        <a href="plants.html">Plant Catalog</a>
+        <a href="challenges.html">Challenges</a>
+        <button class="btn btn-logout btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="dashboard-header">
+        <h2>Welcome back, <span id="username">User</span>! 🌸</h2>
+        <p style="color: var(--charcoal); margin-top: 10px">
+          Your wellness journey is blooming!
+        </p>
+      </div>
+
+      <div class="dashboard-stats">
+        <div class="stat-card">
+          <h3 id="totalPoints">0</h3>
+          <p>Total Points</p>
+        </div>
+
+        <div
+          class="stat-card"
+          style="
+            background: linear-gradient(
+              135deg,
+              var(--dusty-rose),
+              var(--soft-terracotta)
+            );
+          "
+        >
+          <h3 id="totalPlants">0</h3>
+          <p>Plants in Garden</p>
+        </div>
+
+        <div
+          class="stat-card"
+          style="
+            background: linear-gradient(
+              135deg,
+              var(--soft-eucalyptus),
+              var(--misty-sage)
+            );
+          "
+        >
+          <h3 id="bloomedPlants">0</h3>
+          <p>Bloomed Plants</p>
+        </div>
+
+        <div
+          class="stat-card"
+          style="
+            background: linear-gradient(
+              135deg,
+              var(--warm-sand),
+              var(--warm-taupe)
+            );
+          "
+        >
+          <h3 id="unlockedTiers">1</h3>
+          <p>Plant Tiers Unlocked</p>
+        </div>
+      </div>
+
+      <!-- NEW FEATURE: Streak Counter & Tier Progress -->
+      <div class="grid-2-cols">
+        <!-- Streak Counter -->
+        <div class="card">
+          <div class="streak-counter">
+            <div style="font-size: 40px">🔥</div>
+            <div class="streak-number" id="streakNumber">0</div>
+            <div class="streak-label">Day Streak!</div>
+            <p style="margin-top: 15px; font-size: 14px; opacity: 0.9">
+              Keep it going! Complete a challenge today.
+            </p>
+          </div>
+        </div>
+
+        <!-- Tier Progress -->
+        <div class="card">
+          <div class="tier-progress">
+            <svg class="progress-ring" width="120" height="120">
+              <circle
+                class="progress-ring-circle"
+                stroke="var(--warm-sand)"
+                stroke-width="10"
+                fill="transparent"
+                r="52"
+                cx="60"
+                cy="60"
+              />
+              <circle
+                id="progressCircle"
+                class="progress-ring-circle"
+                stroke="var(--sage-green)"
+                stroke-width="10"
+                fill="transparent"
+                r="52"
+                cx="60"
+                cy="60"
+                stroke-dasharray="326.73"
+                stroke-dashoffset="326.73"
+                stroke-linecap="round"
+              />
+            </svg>
+            <div class="tier-name" id="currentTier">Common Tier</div>
+            <div class="tier-subtitle" id="tierProgress">0 / 500 to Rare</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW FEATURE: Garden Health & Achievements -->
+      <div class="grid-2-cols">
+        <!-- Garden Health Score -->
+        <div class="card">
+          <h2 style="color: var(--deep-forest); margin-bottom: 20px">
+            🌟 Garden Health
+          </h2>
+          <div class="health-score">
+            <div style="font-size: 48px; margin-bottom: 10px">🌱</div>
+            <div class="health-stars" id="healthStars">⭐⭐⭐⭐⭐</div>
+            <div class="health-message" id="healthMessage">
+              Your garden is thriving!
+            </div>
+            <p
+              style="margin-top: 15px; color: var(--charcoal); font-size: 14px"
+            >
+              All plants are healthy and growing well.
+            </p>
+          </div>
+        </div>
+
+        <!-- Achievement Badges -->
+        <div class="card">
+          <h2 style="color: var(--deep-forest); margin-bottom: 20px">
+            🏆 Achievements
+          </h2>
+          <div class="badge-container">
+            <div
+              class="badge-item locked"
+              id="badge-first-challenge"
+              title="Complete your first challenge"
+            >
+              <div class="badge-icon">🥇</div>
+              <div class="badge-name">First Step</div>
+            </div>
+            <div
+              class="badge-item locked"
+              id="badge-100-points"
+              title="Earn 100 points"
+            >
+              <div class="badge-icon">🌟</div>
+              <div class="badge-name">Century</div>
+            </div>
+            <div
+              class="badge-item locked"
+              id="badge-first-bloom"
+              title="Grow your first bloomed plant"
+            >
+              <div class="badge-icon">🌸</div>
+              <div class="badge-name">Bloomer</div>
+            </div>
+            <div
+              class="badge-item locked"
+              id="badge-7-streak"
+              title="Maintain a 7-day streak"
+            >
+              <div class="badge-icon">🔥</div>
+              <div class="badge-name">On Fire</div>
+            </div>
+            <div
+              class="badge-item locked"
+              id="badge-5-plants"
+              title="Grow 5 plants"
+            >
+              <div class="badge-icon">🌿</div>
+              <div class="badge-name">Gardener</div>
+            </div>
+            <div
+              class="badge-item locked"
+              id="badge-rare-tier"
+              title="Unlock Rare tier"
+            >
+              <div class="badge-icon">💎</div>
+              <div class="badge-name">Rare</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- NEW FEATURE: Garden Preview -->
+      <div class="card">
+        <h2 style="color: var(--deep-forest); margin-bottom: 10px">
+          🌱 Garden Preview
+        </h2>
+        <p style="color: var(--charcoal); margin-bottom: 20px">
+          Your newest plants
+        </p>
+        <div class="garden-preview" id="gardenPreview">
+          <div
+            style="color: var(--light-sage); text-align: center; padding: 40px"
+          >
+            No plants yet. Start growing your garden! 🌱
+          </div>
+        </div>
+        <div style="text-align: center; margin-top: 20px">
+          <a href="garden.html" class="btn btn-success">View Full Garden 🌸</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 style="color: var(--deep-forest); margin-bottom: 20px">
+          🎯 Quick Actions
+        </h2>
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+          "
+        >
+          <a href="garden.html" class="btn btn-success">View My Garden 🌱</a>
+          <a href="plants.html" class="btn btn-primary">Browse Plants 🌸</a>
+          <a href="challenges.html" class="btn btn-secondary"
+            >View Challenges 🎯</a
+          >
+        </div>
+      </div>
+
+      <!-- ENHANCED: Recent Activity with Better Display -->
+      <div class="card">
+        <h2 style="color: var(--deep-forest); margin-bottom: 20px">
+          🌟 Recent Activity
+        </h2>
+        <div class="activity-feed" id="recentActivity">
+          <p style="color: var(--charcoal); text-align: center; opacity: 0.7">
+            No recent activity yet. Start by completing a challenge!
+          </p>
+        </div>
+      </div>
+    </div>
+    <footer class="wellness-footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-logo">🌱 Wellness Garden</h3>
+          <p class="footer-tagline">Grow your health, bloom your life</p>
+          <div class="footer-social">
+            <a href="#" class="social-link" title="Instagram">📷</a>
+            <a href="#" class="social-link" title="Twitter">🐦</a>
+            <a href="#" class="social-link" title="Facebook">📘</a>
+            <a href="#" class="social-link" title="Email">📧</a>
+          </div>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="garden.html">My Garden</a></li>
+            <li><a href="plants.html">Plant Catalog</a></li>
+            <li><a href="challenges.html">Challenges</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="#">Wellness Tips</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Support</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Stay Connected</h4>
+          <p class="footer-text">Get wellness tips and updates!</p>
+          <div class="footer-newsletter">
+            <input
+              type="email"
+              placeholder="Your email"
+              class="newsletter-input"
+            />
+            <button class="newsletter-btn">Subscribe</button>
+          </div>
+        </div>
+      </div>
+      
+      <div class="footer-bottom">
+        <p class="footer-copyright">
+          © 2026 Wellness Garden. Made with 💚 for your wellness journey
+        </p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Policy</a>
+          <span class="separator">•</span>
+          <a href="#">Terms of Service</a>
+          <span class="separator">•</span>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </footer>
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      // Check if user is logged in
+      checkAuth();
+
+      // Global variables for new features
+      let activities = [];
+      let streak = 1;
+
+      // Load dashboard data
+      async function loadDashboard() {
+        const user = getUser();
+        const token = getToken();
+
+        if (!user || !token) {
+          console.error("No user or token found");
+          return;
+        }
+
+        console.log("📊 Loading dashboard for user:", user.user_id);
+
+        // Display username from localStorage
+        document.getElementById("username").textContent = user.username;
+
+        // ✅ FETCH FRESH USER DATA FROM SERVER
+        try {
+          console.log("🔄 Fetching fresh user data from server...");
+          const userResponse = await fetch(`${API_URL}/users/${user.user_id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (userResponse.ok) {
+            const freshUserData = await userResponse.json();
+            console.log("✅ Fresh user data received:", freshUserData);
+
+            // Update points with fresh data
+            const currentPoints = freshUserData.points || 0;
+            document.getElementById("totalPoints").textContent = currentPoints;
+
+            // Update localStorage with fresh data
+            saveUser(freshUserData);
+            console.log("💾 localStorage updated with fresh data");
+
+            // Calculate unlocked tiers with fresh points
+            let tierCount = 1; // Common (always unlocked)
+            if (currentPoints >= 500) tierCount = 2; // Rare
+            if (currentPoints >= 1500) tierCount = 3; // Epic
+            if (currentPoints >= 3000) tierCount = 4; // Legendary
+            document.getElementById("unlockedTiers").textContent = tierCount;
+
+            // NEW: Update tier progress ring
+            updateTierProgress(currentPoints);
+
+            // NEW: Update badges
+            updateBadges(currentPoints);
+          } else {
+            console.error(
+              "❌ Failed to fetch fresh user data, using cached data",
+            );
+            // Fallback to localStorage data
+            document.getElementById("totalPoints").textContent =
+              user.points || 0;
+
+            const points = user.points || 0;
+            let tierCount = 1;
+            if (points >= 500) tierCount = 2;
+            if (points >= 1500) tierCount = 3;
+            if (points >= 3000) tierCount = 4;
+            document.getElementById("unlockedTiers").textContent = tierCount;
+            updateTierProgress(points);
+          }
+        } catch (error) {
+          console.error("❌ Error fetching user data:", error);
+          // Fallback to localStorage data
+          document.getElementById("totalPoints").textContent = user.points || 0;
+        }
+
+        // Load garden stats
+        try {
+          console.log("🔄 Fetching garden stats...");
+          const response = await fetch(`${API_URL}/garden/${user.user_id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const plants = await response.json();
+            console.log("✅ Garden stats received:", plants.length, "plants");
+
+            // Total plants
+            document.getElementById("totalPlants").textContent = plants.length;
+
+            // Bloomed plants
+            const bloomedCount = plants.filter(
+              (p) => p.growth_stage === "bloomed",
+            ).length;
+            document.getElementById("bloomedPlants").textContent = bloomedCount;
+
+            // NEW: Update garden-based badges
+            if (bloomedCount > 0) {
+              document
+                .getElementById("badge-first-bloom")
+                .classList.remove("locked");
+            }
+            if (plants.length >= 5) {
+              document
+                .getElementById("badge-5-plants")
+                .classList.remove("locked");
+            }
+
+            // NEW: Display garden preview
+            displayGardenPreview(plants.slice(0, 3));
+
+            // NEW: Add to activity feed
+            if (plants.length > 0) {
+              plants.slice(0, 2).forEach((plant) => {
+                activities.push({
+                  icon: getPlantEmoji(plant.plant_name),
+                  title: `Planted ${plant.plant_nickname}`,
+                  time: formatTimeAgo(plant.planted_at),
+                });
+              });
+            }
+
+            // NEW: Calculate garden health
+            calculateGardenHealth(plants.length, bloomedCount);
+          }
+        } catch (error) {
+          console.error("❌ Error loading garden stats:", error);
+        }
+
+        // NEW: Calculate streak
+        calculateStreak();
+
+        // NEW: Load recent activity
+        loadRecentActivity();
+      }
+
+      // NEW FUNCTION: Update tier progress ring
+      function updateTierProgress(points) {
+        let currentTier = "Common";
+        let nextTier = "Rare";
+        let requiredPoints = 500;
+        let progress = 0;
+
+        if (points >= 3000) {
+          currentTier = "Legendary";
+          nextTier = "MAX";
+          progress = 100;
+        } else if (points >= 1500) {
+          currentTier = "Epic";
+          nextTier = "Legendary";
+          requiredPoints = 3000;
+          progress = ((points - 1500) / 1500) * 100;
+        } else if (points >= 500) {
+          currentTier = "Rare";
+          nextTier = "Epic";
+          requiredPoints = 1500;
+          progress = ((points - 500) / 1000) * 100;
+        } else {
+          progress = (points / 500) * 100;
+        }
+
+        document.getElementById("currentTier").textContent =
+          `${currentTier} Tier`;
+
+        if (nextTier === "MAX") {
+          document.getElementById("tierProgress").textContent =
+            "Max Tier Reached! 🎉";
+        } else {
+          const pointsNeeded = requiredPoints - points;
+          document.getElementById("tierProgress").textContent =
+            `${pointsNeeded} more to ${nextTier}`;
+        }
+
+        const circle = document.getElementById("progressCircle");
+        const circumference = 326.73;
+        const offset = circumference - (progress / 100) * circumference;
+        circle.style.strokeDashoffset = offset;
+      }
+
+      // NEW FUNCTION: Update badges
+      function updateBadges(points) {
+        if (points > 0) {
+          document
+            .getElementById("badge-first-challenge")
+            .classList.remove("locked");
+        }
+        if (points >= 100) {
+          document
+            .getElementById("badge-100-points")
+            .classList.remove("locked");
+        }
+        if (points >= 500) {
+          document.getElementById("badge-rare-tier").classList.remove("locked");
+        }
+      }
+
+      // NEW FUNCTION: Calculate streak
+      function calculateStreak() {
+        const lastActivity = localStorage.getItem("lastActivityDate");
+        const today = new Date().toDateString();
+
+        if (lastActivity === today) {
+          streak = parseInt(localStorage.getItem("currentStreak") || "1");
+        } else {
+          streak = 1;
+          localStorage.setItem("currentStreak", "1");
+          localStorage.setItem("lastActivityDate", today);
+        }
+
+        document.getElementById("streakNumber").textContent = streak;
+
+        if (streak >= 7) {
+          document.getElementById("badge-7-streak").classList.remove("locked");
+        }
+      }
+
+      // NEW FUNCTION: Display garden preview
+      function displayGardenPreview(plants) {
+        const container = document.getElementById("gardenPreview");
+
+        if (!plants || plants.length === 0) {
+          container.innerHTML = `
+            <div style="color: var(--light-sage); text-align: center; padding: 40px;">
+              No plants yet. Start growing your garden! 🌱
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = plants
+          .map(
+            (plant) => `
+          <div class="preview-plant" onclick="window.location.href='garden.html'">
+            <div class="preview-plant-emoji">${getPlantEmoji(plant.plant_name)}</div>
+            <div class="preview-plant-name">${plant.plant_nickname}</div>
+          </div>
+        `,
+          )
+          .join("");
+      }
+
+      // NEW FUNCTION: Calculate garden health
+      function calculateGardenHealth(totalPlants, bloomedPlants) {
+        let healthScore = 5;
+        let message = "Your garden is thriving!";
+
+        if (totalPlants === 0) {
+          healthScore = 3;
+          message = "Plant your first seed to start!";
+        } else if (bloomedPlants === 0 && totalPlants > 0) {
+          healthScore = 4;
+          message = "Your plants are growing nicely!";
+        } else if (bloomedPlants === totalPlants) {
+          healthScore = 5;
+          message = "Perfect! All plants blooming!";
+        }
+
+        const stars = "⭐".repeat(healthScore) + "☆".repeat(5 - healthScore);
+        document.getElementById("healthStars").textContent = stars;
+        document.getElementById("healthMessage").textContent = message;
+      }
+
+      // NEW FUNCTION: Load recent activity
+      function loadRecentActivity() {
+        const container = document.getElementById("recentActivity");
+        const points = parseInt(
+          document.getElementById("totalPoints").textContent,
+        );
+
+        if (points > 0) {
+          activities.unshift({
+            icon: "🎉",
+            title: "Earned points from challenges",
+            time: "Today",
+          });
+        }
+
+        if (activities.length === 0) {
+          container.innerHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--light-sage);">
+              No recent activity yet. Start by completing a challenge!
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = activities
+          .slice(0, 5)
+          .map(
+            (activity) => `
+          <div class="activity-item">
+            <div class="activity-icon">${activity.icon}</div>
+            <div class="activity-content">
+              <div class="activity-title">${activity.title}</div>
+              <div class="activity-time">${activity.time}</div>
+            </div>
+          </div>
+        `,
+          )
+          .join("");
+      }
+
+      // Helper: Get plant emoji
+      function getPlantEmoji(name) {
+        const emojis = {
+          Sunflower: "🌻",
+          Daisy: "🌼",
+          Rose: "🌹",
+          Tulip: "🌷",
+          "Cherry Blossom": "🌸",
+          Orchid: "🌺",
+          "Moon Flower": "🌙",
+          "Dragon Tree": "🐉",
+        };
+        return emojis[name] || "🌱";
+      }
+
+      // Helper: Format time ago
+      function formatTimeAgo(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 0) return "Today";
+        if (diffDays === 1) return "Yesterday";
+        if (diffDays < 7) return `${diffDays} days ago`;
+        return formatDate(dateString);
+      }
+
+      // Load dashboard on page load
+      loadDashboard();
+    </script>
+  </body>
+</html>

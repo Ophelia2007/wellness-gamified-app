@@ -4,7 +4,7 @@ A Node.js backend API for a gamified wellness platform that encourages healthy h
 
 ## 🎮 Gamification Theme: Digital Garden
 
-The Digital Garden transforms wellness into a visual journey where users grow virtual plants by completing challenges. Each challenge automatically nurtures plants, progressing them from seed to bloom through distinct growth stages. Accumulated points unlock rare plant species (common to legendary), encouraging sustained engagement while creating emotional attachment and tangible progress visualization in a low-pressure, rewarding environment.
+The Digital Garden transforms wellness into a visual journey where users grow virtual plants by completing challenges. Each challenge automatically nurtures plants, progressing them from seed to bloom through distinct growth stages. Accumulated points unlock plant species (common to legendary), encouraging sustained engagement while creating emotional attachment and tangible progress visualization in a low-pressure, rewarding environment.
 
 **Additional Features:**
 

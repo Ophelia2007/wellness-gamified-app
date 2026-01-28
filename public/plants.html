@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plant Catalog - Wellness Garden</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="navbar">
+      <a href="dashboard.html" class="navbar-brand">🌱 Wellness Garden</a>
+      <div class="navbar-menu">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="garden.html">My Garden</a>
+        <a href="plants.html">Plant Catalog</a>
+        <a href="challenges.html">Challenges</a>
+        <button class="btn btn-logout btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="card">
+        <h1 style="color: var(--deep-forest)">🌸 Plant Catalog</h1>
+        <p style="color: var(--charcoal); margin: 10px 0; line-height: 1.6">
+          Browse all available plants and see what you can unlock!
+        </p>
+
+        <div class="info-box" style="margin: 20px 0">
+          <p style="margin: 0; font-size: 18px">
+            <strong>Your Points:</strong>
+            <span
+              id="userPoints"
+              style="
+                color: var(--sage-green);
+                font-size: 24px;
+                font-weight: 700;
+              "
+              >Loading...</span
+            >
+            ⭐
+          </p>
+        </div>
+
+        <div id="catalogContainer">
+          <div class="spinner"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plant Modal -->
+    <div
+      id="plantModal"
+      class="modal hidden"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      "
+    >
+      <div class="card" style="max-width: 500px; margin: 20px">
+        <h2 id="modalPlantName" style="color: var(--deep-forest)">
+          Plant Name
+        </h2>
+        <div
+          id="modalPlantEmoji"
+          style="font-size: 80px; text-align: center; margin: 20px 0"
+        >
+          🌱
+        </div>
+        <p
+          id="modalPlantDescription"
+          style="color: var(--charcoal); margin: 15px 0; line-height: 1.6"
+        ></p>
+
+        <div class="info-box" style="margin: 15px 0">
+          <p><strong>Rarity:</strong> <span id="modalPlantRarity"></span></p>
+          <p>
+            <strong>Unlock Points:</strong> <span id="modalPlantPoints"></span>
+          </p>
+        </div>
+
+        <div style="margin-top: 20px">
+          <label
+            for="plantNickname"
+            style="color: var(--deep-forest); font-weight: 600"
+            >Give your plant a nickname:</label
+          >
+          <input
+            type="text"
+            id="plantNickname"
+            class="form-control"
+            placeholder="e.g., Sunny, Rosa, Lucky"
+          />
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px">
+          <button id="plantBtn" class="btn btn-primary" style="flex: 1">
+            Plant This Seed 🌱
+          </button>
+          <button
+            onclick="closeModal()"
+            class="btn btn-secondary"
+            style="flex: 1"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+      checkAuth();
+
+      const user = getUser();
+      const token = getToken();
+      let selectedPlant = null;
+      let currentUserPoints = 0;
+
+      // ✅ FETCH FRESH USER POINTS FROM SERVER
+      async function loadUserPoints() {
+        try {
+          console.log("🔄 Fetching fresh user points...");
+          const response = await fetch(`${API_URL}/users/${user.user_id}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (response.ok) {
+            const userData = await response.json();
+            currentUserPoints = userData.points || 0;
+            document.getElementById("userPoints").textContent =
+              currentUserPoints;
+            console.log("✅ User points loaded:", currentUserPoints);
+
+            // Update localStorage
+            saveUser(userData);
+          } else {
+            // Fallback to cached data
+            console.log("⚠️ Using cached points");
+            currentUserPoints = user.points || 0;
+            document.getElementById("userPoints").textContent =
+              currentUserPoints;
+          }
+        } catch (error) {
+          console.error("❌ Error loading user points:", error);
+          // Fallback to cached data
+          currentUserPoints = user.points || 0;
+          document.getElementById("userPoints").textContent = currentUserPoints;
+        }
+      }
+
+      // Load plant catalog
+      async function loadCatalog() {
+        try {
+          console.log("🔄 Loading plant catalog...");
+          const response = await fetch(
+            `${API_URL}/plants/unlocked/${user.user_id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            },
+          );
+
+          if (!response.ok) throw new Error("Failed to load plants");
+
+          const plants = await response.json();
+          console.log("✅ Plants loaded:", plants.length);
+          displayCatalog(plants);
+        } catch (error) {
+          console.error("❌ Error loading plants:", error);
+          document.getElementById("catalogContainer").innerHTML = `
+            <div style="text-align: center; padding: 40px;">
+              <p style="color: var(--dusty-rose);">Error loading plants. Please try again.</p>
+              <button class="btn btn-primary" onclick="loadCatalog()">🔄 Retry</button>
+            </div>
+          `;
+        }
+      }
+
+      function displayCatalog(plants) {
+        const container = document.getElementById("catalogContainer");
+
+        if (plants.length === 0) {
+          container.innerHTML =
+            '<p style="text-align: center; color: var(--charcoal);">No plants available.</p>';
+          return;
+        }
+
+        container.innerHTML = '<div class="plant-catalog"></div>';
+        const catalog = container.querySelector(".plant-catalog");
+
+        plants.forEach((plant) => {
+          const isUnlocked = plant.is_unlocked === 1;
+          const emoji = getPlantEmoji(plant.plant_name);
+
+          const plantCard = document.createElement("div");
+          plantCard.className = `catalog-item ${isUnlocked ? "unlocked" : "locked"}`;
+          plantCard.innerHTML = `
+            <div class="plant-emoji">${emoji}</div>
+            <h3 style="color: var(--deep-forest);">${plant.plant_name}</h3>
+            <span class="rarity-badge rarity-${plant.rarity}">${plant.rarity.toUpperCase()}</span>
+            <p style="font-size: 14px; color: var(--charcoal); margin: 10px 0;">
+                ${isUnlocked ? "✅ Unlocked" : `🔒 Need ${plant.unlock_points} points`}
+            </p>
+            ${
+              isUnlocked
+                ? `<button class="btn btn-success btn-sm" onclick="openModal(${plant.plant_type_id}, '${plant.plant_name}', '${plant.rarity}', ${plant.unlock_points}, '${plant.description || "A beautiful plant"}')">
+                    Plant This 🌱
+                </button>`
+                : `<button class="btn btn-secondary btn-sm" disabled style="opacity: 0.5;">Locked 🔒</button>`
+            }
+          `;
+
+          catalog.appendChild(plantCard);
+        });
+      }
+
+      function openModal(plantTypeId, name, rarity, points, description) {
+        selectedPlant = { plantTypeId, name, rarity, points, description };
+
+        document.getElementById("modalPlantName").textContent = name;
+        document.getElementById("modalPlantEmoji").textContent =
+          getPlantEmoji(name);
+        document.getElementById("modalPlantDescription").textContent =
+          description;
+        document.getElementById("modalPlantRarity").innerHTML =
+          `<span class="rarity-badge rarity-${rarity}">${rarity.toUpperCase()}</span>`;
+        document.getElementById("modalPlantPoints").textContent =
+          points === 0 ? "Free!" : `${points} points`;
+        document.getElementById("plantNickname").value = "";
+
+        document.getElementById("plantModal").classList.remove("hidden");
+      }
+
+      function closeModal() {
+        document.getElementById("plantModal").classList.add("hidden");
+        selectedPlant = null;
+      }
+
+      document
+        .getElementById("plantBtn")
+        .addEventListener("click", async () => {
+          if (!selectedPlant) return;
+
+          const nickname =
+            document.getElementById("plantNickname").value.trim() ||
+            selectedPlant.name;
+
+          try {
+            console.log("🌱 Planting:", nickname);
+            const response = await fetch(`${API_URL}/garden/plant`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                user_id: user.user_id,
+                plant_type_id: selectedPlant.plantTypeId,
+                plant_nickname: nickname,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              alert(`🎉 Success! ${nickname} has been planted in your garden!`);
+              closeModal();
+              window.location.href = "garden.html";
+            } else {
+              alert(data.message || "Failed to plant seed");
+            }
+          } catch (error) {
+            console.error("❌ Error planting:", error);
+            alert("An error occurred. Please try again.");
+          }
+        });
+
+      function getPlantEmoji(name) {
+        const emojis = {
+          Sunflower: "🌻",
+          Daisy: "🌼",
+          Rose: "🌹",
+          Tulip: "🌷",
+          "Cherry Blossom": "🌸",
+          Orchid: "🌺",
+          "Moon Flower": "🌙",
+          "Dragon Tree": "🐉",
+        };
+        return emojis[name] || "🌱";
+      }
+
+      // Load everything on page load
+      async function initPage() {
+        await loadUserPoints(); // Load points first
+        await loadCatalog(); // Then load catalog
+      }
+
+      initPage();
+    </script>
+    <footer class="wellness-footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-logo">🌱 Wellness Garden</h3>
+          <p class="footer-tagline">Grow your health, bloom your life</p>
+          <div class="footer-social">
+            <a href="#" class="social-link" title="Instagram">📷</a>
+            <a href="#" class="social-link" title="Twitter">🐦</a>
+            <a href="#" class="social-link" title="Facebook">📘</a>
+            <a href="#" class="social-link" title="Email">📧</a>
+          </div>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="garden.html">My Garden</a></li>
+            <li><a href="plants.html">Plant Catalog</a></li>
+            <li><a href="challenges.html">Challenges</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="#">Wellness Tips</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Support</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Stay Connected</h4>
+          <p class="footer-text">Get wellness tips and updates!</p>
+          <div class="footer-newsletter">
+            <input
+              type="email"
+              placeholder="Your email"
+              class="newsletter-input"
+            />
+            <button class="newsletter-btn">Subscribe</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">
+          © 2026 Wellness Garden. Made with 💚 for your wellness journey
+        </p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Policy</a>
+          <span class="separator">•</span>
+          <a href="#">Terms of Service</a>
+          <span class="separator">•</span>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

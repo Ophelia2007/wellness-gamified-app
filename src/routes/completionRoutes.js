@@ -9,9 +9,11 @@ const express = require("express");
 const router = express.Router();
 const completionController = require("../controllers/completionController");
 const completionMiddleware = require("../middleware/completionMiddleware");
+const { authenticateToken } = require('../middleware/authMiddleware');
 
 // CREATE COMPLETION: Handles when a user submits a completed challenge
 router.post('/:challenge_id',
+    authenticateToken,
     completionMiddleware.checkUser,             // 1. Verify user exists/is logged in
     completionMiddleware.checkChallenge,        // 2. Verify the challenge is valid
     completionController.createCompletionRecord, // 3. Log the completion in the database

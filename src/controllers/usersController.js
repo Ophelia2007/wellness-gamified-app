@@ -1,28 +1,9 @@
 const usersModel = require("../models/usersModel");
-
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 // ##############################################################
 // CREATE USER FLOW
 // ##############################################################
-
-// Insert the new user into the database
-module.exports.createNewUser = (req, res, next) => {
-  if (!req.body.username) {
-    return res.status(400).send({ message: "Missing required data." });
-  }
-
-  const data = { userName: req.body.username };
-
-  const callback = (error, results, fields) => {
-    if (error) {
-      console.error("Error createNewUser:", error);
-      res.status(500).json(error);
-    } else {
-      req.insertId = results.insertId; // Store new ID for the print step
-      next();
-    }
-  };
-  usersModel.insertSingle(data, callback);
-};
 
 // Return the newly created user data
 module.exports.printNewUser = (req, res, next) => {

@@ -1,39 +1,42 @@
-// ##############################################################
-// REQUIRE MODULES
-// ##############################################################
-const pool = require("../services/db");
+const pool = require('../services/db');
 
-// ##############################################################
-// DEFINE SQL STATEMENTS
-// ##############################################################
 const SQLSTATEMENT = `
+-- Drop tables in reverse order
+DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS user_garden;
 DROP TABLE IF EXISTS plant_types;
 DROP TABLE IF EXISTS UserCompletion;
 DROP TABLE IF EXISTS WellnessChallenge;
 DROP TABLE IF EXISTS User;
 
+-- Create User table with email and password
 CREATE TABLE User (
-user_id INT AUTO_INCREMENT PRIMARY KEY,
-username VARCHAR(255) NOT NULL,
-points INT DEFAULT 0
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    points INT DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Create WellnessChallenge table
 CREATE TABLE WellnessChallenge (
-challenge_id INT AUTO_INCREMENT PRIMARY KEY,
-creator_id INT NOT NULL,
-description TEXT NOT NULL,
-points INT NOT NULL
+    challenge_id INT AUTO_INCREMENT PRIMARY KEY,
+    creator_id INT NOT NULL,
+    description TEXT NOT NULL,
+    points INT NOT NULL
 );
 
+-- Create UserCompletion table
 CREATE TABLE UserCompletion (
-completion_id INT AUTO_INCREMENT PRIMARY KEY,
-challenge_id INT NOT NULL,
-user_id INT NOT NULL,
-details TEXT
+    completion_id INT AUTO_INCREMENT PRIMARY KEY,
+    challenge_id INT NOT NULL,
+    user_id INT NOT NULL,
+    details TEXT,
+    completed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create gamification parent table (no dependencies)
+-- Create plant_types table
 CREATE TABLE plant_types (
     plant_type_id INT PRIMARY KEY AUTO_INCREMENT,
     plant_name VARCHAR(100) NOT NULL,
@@ -44,7 +47,7 @@ CREATE TABLE plant_types (
     description TEXT
 );
 
--- Create gamification child table (depends on User and plant_types)
+-- Create user_garden table
 CREATE TABLE user_garden (
     garden_id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
@@ -59,7 +62,20 @@ CREATE TABLE user_garden (
     FOREIGN KEY (plant_type_id) REFERENCES plant_types(plant_type_id)
 );
 
--- Insert sample plant data
+-- Create reviews table (NEW for CA2)
+CREATE TABLE reviews (
+    review_id INT PRIMARY KEY AUTO_INCREMENT,
+    challenge_id INT NOT NULL,
+    user_id INT NOT NULL,
+    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (challenge_id) REFERENCES WellnessChallenge(challenge_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
+);
+
+-- Insert sample plants
 INSERT INTO plant_types (plant_name, rarity, unlock_points, growth_time_hours, image_url, description) VALUES
 ('Sunflower', 'common', 0, 24, 'sunflower.png', 'A bright and cheerful common flower'),
 ('Daisy', 'common', 0, 20, 'daisy.png', 'Simple and beautiful starter plant'),
@@ -71,14 +87,11 @@ INSERT INTO plant_types (plant_name, rarity, unlock_points, growth_time_hours, i
 ('Dragon Tree', 'legendary', 3000, 100, 'dragontree.png', 'Ancient legendary plant');
 `;
 
-// ##############################################################
-// RUN SQL STATEMENTS
-// ##############################################################
 pool.query(SQLSTATEMENT, (error, results, fields) => {
-  if (error) {
-    console.error("Error creating tables:", error);
-  } else {
-    console.log("Tables created successfully");
-  }
-  process.exit();
+    if (error) {
+        console.error("Error creating tables:", error);
+    } else {
+        console.log("Tables created successfully!");
+    }
+    process.exit();
 });

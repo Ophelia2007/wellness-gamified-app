@@ -88,3 +88,16 @@ module.exports.waterPlant = (data, callback) => {
   const VALUES = [data.gardenId];
   pool.query(SQLSTATEMENT, VALUES, callback);
 };
+
+// ##############################################################
+// GET PLANT BY GARDEN_ID (for ownership check)
+// ##############################################################
+module.exports.getPlantById = (data, callback) => {
+    const SQLSTATEMENT = `
+        SELECT garden_id, user_id, plant_type_id, plant_nickname, growth_stage
+        FROM user_garden
+        WHERE garden_id = ?;
+    `;
+    const VALUES = [data.gardenId];
+    pool.query(SQLSTATEMENT, VALUES, callback);
+};

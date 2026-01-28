@@ -20,15 +20,20 @@ module.exports.selectAllPlants = (callback) => {
 module.exports.selectUnlockedPlants = (data, callback) => {
   const SQLSTATEMENT = `
     SELECT 
-      plant_type_id,
-      plant_name,
-      rarity,
-      unlock_points,
-      image_url,
-      description
-    FROM plant_types
-    WHERE (SELECT points FROM user WHERE user_id = ?) >= unlock_points = 1
-    ORDER BY unlock_points ASC;
+      pt.plant_type_id,
+      pt.plant_name,
+      pt.rarity,
+      pt.unlock_points,
+      pt.image_url,
+      pt.description,
+      CASE 
+        WHEN u.points >= pt.unlock_points THEN 1 
+        ELSE 0 
+      END as is_unlocked
+    FROM plant_types pt
+    CROSS JOIN User u
+    WHERE u.user_id = ?
+    ORDER BY pt.unlock_points ASC;
   `;
   const VALUES = [data.userId];
   pool.query(SQLSTATEMENT, VALUES, callback);
