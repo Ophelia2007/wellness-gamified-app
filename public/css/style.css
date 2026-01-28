@@ -3,6 +3,11 @@
    Calming, neutral color palette
    ============================================ */
 
+/* ============================================
+   WELLNESS GARDEN - AESTHETIC DESIGN
+   Calming, neutral color palette
+   ============================================ */
+
 :root {
     /* Primary Palette - Calming Neutrals */
     --sage-green: #A8B5A0;
@@ -1096,6 +1101,103 @@ html {
     scroll-padding-top: 80px;
 }
 
+/*fix the white block issue*/
+.card, .stat-card {
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+}
+
+body::before {
+    will-change: auto;
+}
+
+/* ============================================
+   TOAST NOTIFICATIONS
+   ============================================ */
+
+.toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: var(--shadow-strong);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10000;
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    min-width: 250px;
+    max-width: 400px;
+}
+
+.toast-show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.toast-success {
+    border-left: 4px solid var(--soft-eucalyptus);
+    background: linear-gradient(to right, rgba(201, 213, 192, 0.1), white);
+}
+
+.toast-error {
+    border-left: 4px solid var(--dusty-rose);
+    background: linear-gradient(to right, rgba(212, 165, 165, 0.1), white);
+}
+
+.toast-info {
+    border-left: 4px solid var(--sage-green);
+    background: linear-gradient(to right, rgba(168, 181, 160, 0.1), white);
+}
+
+.toast-warning {
+    border-left: 4px solid var(--soft-terracotta);
+    background: linear-gradient(to right, rgba(201, 165, 142, 0.1), white);
+}
+
+.toast-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.toast-message {
+    color: var(--charcoal);
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.4;
+}
+
+/* ============================================
+   WARNING BUTTON (for Edit functionality)
+   ============================================ */
+
+.btn-warning {
+    background: linear-gradient(135deg, var(--soft-terracotta), var(--warm-sand));
+    color: var(--deep-forest);
+    border: none;
+}
+
+.btn-warning:hover {
+    background: linear-gradient(135deg, var(--warm-sand), var(--soft-terracotta));
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-medium);
+}
+
+/* Mobile responsiveness for toasts */
+@media (max-width: 768px) {
+    .toast {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        min-width: auto;
+    }
+}
 /*fix the white block issue*/
 .card, .stat-card {
     transform: translateZ(0);

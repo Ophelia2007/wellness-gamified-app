@@ -98,6 +98,9 @@ function createChallengeCard(challenge) {
                 ✓ Complete
             </button>
             ${isCreator ? `
+                <button class="btn btn-warning btn-sm" onclick="editChallenge(${challenge.challenge_id})">
+                    ✏️ Edit
+                </button>
                 <button class="btn btn-danger btn-sm" onclick="deleteChallenge(${challenge.challenge_id})">
                     🗑️ Delete
                 </button>
@@ -126,7 +129,7 @@ async function createChallenge() {
     const points = parseInt(document.getElementById('points').value);
     
     if (!description || !points || points < 1) {
-        alert('Please provide a valid description and points (minimum 1)');
+        showToast('Please provide a valid description and points (minimum 1)', 'error');
         return;
     }
 
@@ -150,15 +153,15 @@ async function createChallenge() {
         console.log('Create challenge response:', data);
 
         if (response.ok) {
-            alert('✅ Challenge created successfully!');
+            showToast('Challenge created successfully!', 'success');
             hideCreateForm();
             loadChallenges(); // Reload challenges
         } else {
-            alert(data.message || 'Failed to create challenge');
+            showToast(data.message || 'Failed to create challenge', 'error');
         }
     } catch (error) {
         console.error('Error creating challenge:', error);
-        alert(`An error occurred: ${error.message}`);
+        showToast(`An error occurred: ${error.message}`, 'error');
     }
 }
 
@@ -187,16 +190,18 @@ async function completeChallenge(challengeId, description) {
         console.log('Complete challenge response:', data);
 
         if (response.ok) {
-            alert(`🎉 Challenge completed! You earned ${data.points || 0} points!\n\nCheck your email for details.`);
+            showToast(`Challenge completed! You earned ${data.points || 0} points!`, 'success');
             
-            // Reload page to show updated challenges and points
-            location.reload();
+            // Reload page after a short delay to show the toast
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
         } else {
-            alert(data.message || 'Failed to complete challenge');
+            showToast(data.message || 'Failed to complete challenge', 'error');
         }
     } catch (error) {
         console.error('Error completing challenge:', error);
-        alert(`An error occurred: ${error.message}`);
+        showToast(`An error occurred: ${error.message}`, 'error');
     }
 }
 
@@ -219,14 +224,119 @@ async function deleteChallenge(challengeId) {
         console.log('Delete challenge response status:', response.status);
 
         if (response.status === 204 || response.ok) {
-            alert('🗑️ Challenge deleted successfully!');
+            showToast('🗑️ Challenge deleted successfully!', 'success');
             loadChallenges(); // Reload challenges
         } else {
             const data = await response.json();
-            alert(data.message || 'Failed to delete challenge');
+            showToast(data.message || 'Failed to delete challenge', 'error');
         }
     } catch (error) {
         console.error('Error deleting challenge:', error);
-        alert(`An error occurred: ${error.message}`);
+        showToast(`An error occurred: ${error.message}`, 'error');
     }
+}
+
+// ============================================
+// EDIT CHALLENGE FUNCTION
+// ============================================
+
+async function editChallenge(challengeId) {
+    // Get current challenge data
+    const currentChallenge = await getChallengeById(challengeId);
+    
+    if (!currentChallenge) {
+        showToast('Challenge not found', 'error');
+        return;
+    }
+    
+    // Prompt user for new values
+    const newDescription = prompt('Edit description:', currentChallenge.description);
+    if (!newDescription) return; // User cancelled
+    
+    const newPoints = prompt('Edit points:', currentChallenge.points);
+    if (!newPoints) return; // User cancelled
+    
+    const pointsNum = parseInt(newPoints);
+    if (isNaN(pointsNum) || pointsNum <= 0) {
+        showToast('Points must be a positive number', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/challenges/${challengeId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+                description: newDescription,
+                points: pointsNum,
+                user_id: currentChallenge.creator_id || currentChallenge.user_id
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showToast('Challenge updated successfully!', 'success');
+            loadChallenges(); // Reload the challenges list
+        } else {
+            showToast(data.message || 'Failed to update challenge', 'error');
+        }
+    } catch (error) {
+        console.error('Error editing challenge:', error);
+        showToast('An error occurred. Please try again.', 'error');
+    }
+}
+
+// Helper function to get challenge by ID
+async function getChallengeById(challengeId) {
+    try {
+        const response = await fetch(`${API_URL}/challenges`);
+        
+        if (!response.ok) return null;
+        
+        const challenges = await response.json();
+        return challenges.find(c => c.challenge_id === challengeId);
+    } catch (error) {
+        console.error('Error fetching challenge:', error);
+        return null;
+    }
+}
+
+// ============================================
+// TOAST NOTIFICATION SYSTEM
+// ============================================
+
+function showToast(message, type = 'success') {
+    // Remove existing toasts
+    const existingToast = document.querySelector('.toast');
+    if (existingToast) existingToast.remove();
+    
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icons = {
+        success: '✅',
+        error: '❌',
+        info: 'ℹ️',
+        warning: '⚠️'
+    };
+    
+    toast.innerHTML = `
+        <span class="toast-icon">${icons[type] || icons.info}</span>
+        <span class="toast-message">${message}</span>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.add('toast-show'), 100);
+    
+    // Auto remove
+    setTimeout(() => {
+        toast.classList.remove('toast-show');
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
 }
