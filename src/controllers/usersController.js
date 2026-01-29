@@ -1,6 +1,5 @@
 const usersModel = require("../models/usersModel");
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+
 // ##############################################################
 // CREATE USER FLOW
 // ##############################################################

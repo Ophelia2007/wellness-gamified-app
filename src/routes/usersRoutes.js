@@ -11,7 +11,6 @@ const router = express.Router();
 const userController = require("../controllers/usersController");
 const userMiddleware = require("../middleware/userMiddleware");
 const { authenticateToken } = require('../middleware/authMiddleware');
-const authController = require("../controllers/authController")
 
 // READ ALL: Handles GET requests to fetch every user in the database
 router.get('/', 

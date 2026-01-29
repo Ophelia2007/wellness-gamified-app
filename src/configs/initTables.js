@@ -62,19 +62,6 @@ CREATE TABLE user_garden (
     FOREIGN KEY (plant_type_id) REFERENCES plant_types(plant_type_id)
 );
 
--- Create reviews table (NEW for CA2)
-CREATE TABLE reviews (
-    review_id INT PRIMARY KEY AUTO_INCREMENT,
-    challenge_id INT NOT NULL,
-    user_id INT NOT NULL,
-    rating INT NOT NULL CHECK (rating >= 1 AND rating <= 5),
-    comment TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (challenge_id) REFERENCES WellnessChallenge(challenge_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES User(user_id) ON DELETE CASCADE
-);
-
 -- Insert sample plants
 INSERT INTO plant_types (plant_name, rarity, unlock_points, growth_time_hours, image_url, description) VALUES
 ('Sunflower', 'common', 0, 24, 'sunflower.png', 'A bright and cheerful common flower'),

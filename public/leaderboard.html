@@ -1,0 +1,437 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leaderboard - Wellness Garden</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- Navigation Bar -->
+    <div class="navbar">
+      <a href="dashboard.html" class="navbar-brand">🌱 Wellness Garden</a>
+      <div class="navbar-menu">
+        <a href="dashboard.html">Dashboard</a>
+        <a href="garden.html">My Garden</a>
+        <a href="plants.html">Plant Catalog</a>
+        <a href="challenges.html">Challenges</a>
+        <a href="leaderboard.html" class="active">Leaderboard</a>
+        <button class="btn btn-logout btn-sm" onclick="logout()">Logout</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Header -->
+      <div class="card">
+        <h1 style="color: var(--deep-forest); margin-bottom: 15px">
+          🏆 Wellness Garden Leaderboard
+        </h1>
+        <p style="color: var(--charcoal); line-height: 1.6">
+          See how you rank among the wellness champions!
+        </p>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="dashboard-stats" id="statCards" style="display: none">
+        <div class="stat-card">
+          <h3 id="totalUsers">0</h3>
+          <p>Total Gardeners</p>
+        </div>
+        <div
+          class="stat-card"
+          style="
+            background: linear-gradient(
+              135deg,
+              var(--dusty-rose),
+              var(--soft-terracotta)
+            );
+          "
+        >
+          <h3 id="topPoints">0</h3>
+          <p>Top Score</p>
+        </div>
+        <div
+          class="stat-card"
+          style="
+            background: linear-gradient(
+              135deg,
+              var(--soft-eucalyptus),
+              var(--misty-sage)
+            );
+          "
+        >
+          <h3 id="averagePoints">0</h3>
+          <p>Average Points</p>
+        </div>
+      </div>
+
+      <!-- Leaderboard Card -->
+      <div class="card">
+        <!-- Loading State -->
+        <div
+          class="loading-container"
+          id="loadingState"
+          style="text-align: center; padding: 40px"
+        >
+          <div class="spinner"></div>
+          <p style="color: var(--charcoal); margin-top: 15px">
+            Loading leaderboard...
+          </p>
+        </div>
+
+        <!-- Empty State -->
+        <div
+          class="empty-state"
+          id="emptyState"
+          style="display: none; text-align: center; padding: 40px"
+        >
+          <div style="font-size: 60px; margin-bottom: 20px">🌱</div>
+          <h3 style="color: var(--deep-forest)">No Gardeners Yet</h3>
+          <p style="color: var(--charcoal)">
+            Be the first to join the Wellness Garden community!
+          </p>
+        </div>
+
+        <!-- Leaderboard Table -->
+        <div id="leaderboardContent" style="display: none">
+          <div style="overflow-x: auto">
+            <table
+              style="width: 100%; border-collapse: collapse; margin-top: 20px"
+            >
+              <thead>
+                <tr
+                  style="
+                    background: var(--soft-eucalyptus);
+                    border-bottom: 2px solid var(--sage-green);
+                  "
+                >
+                  <th
+                    style="
+                      padding: 15px;
+                      text-align: left;
+                      color: var(--deep-forest);
+                      font-weight: 600;
+                    "
+                  >
+                    Rank
+                  </th>
+                  <th
+                    style="
+                      padding: 15px;
+                      text-align: left;
+                      color: var(--deep-forest);
+                      font-weight: 600;
+                    "
+                  >
+                    Gardener
+                  </th>
+                  <th
+                    style="
+                      padding: 15px;
+                      text-align: left;
+                      color: var(--deep-forest);
+                      font-weight: 600;
+                    "
+                  >
+                    Points
+                  </th>
+                  <th
+                    style="
+                      padding: 15px;
+                      text-align: left;
+                      color: var(--deep-forest);
+                      font-weight: 600;
+                    "
+                  >
+                    Joined
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="leaderboardBody">
+                <!-- Leaderboard rows will be populated here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/utils.js"></script>
+    <script>
+      // Check authentication on page load
+      window.addEventListener("DOMContentLoaded", () => {
+        checkAuth();
+        loadLeaderboard();
+      });
+
+      // Check if user is authenticated
+      function checkAuth() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "login.html";
+        }
+      }
+
+      // Load leaderboard data
+      async function loadLeaderboard() {
+        const loadingState = document.getElementById("loadingState");
+        const emptyState = document.getElementById("emptyState");
+        const leaderboardContent =
+          document.getElementById("leaderboardContent");
+        const leaderboardBody = document.getElementById("leaderboardBody");
+        const statCards = document.getElementById("statCards");
+
+        try {
+          const token = localStorage.getItem("token");
+
+          const response = await fetch(`${API_URL}/users`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          // ✅ Check for auth errors (CONSISTENT HANDLING)
+          if (response.status === 401 || response.status === 403) {
+            console.log("🔒 Token expired while loading leaderboard");
+            handleExpiredToken("leaderboard.html");
+            return;
+          }
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch leaderboard data");
+          }
+
+          const users = await response.json();
+
+          // Hide loading state
+          loadingState.style.display = "none";
+
+          // Check if there are users
+          if (!users || users.length === 0) {
+            emptyState.style.display = "block";
+            return;
+          }
+
+          // Sort users by points (descending)
+          users.sort((a, b) => (b.points || 0) - (a.points || 0));
+
+          // Calculate statistics
+          const totalUsers = users.length;
+          const topPoints = users[0]?.points || 0;
+          const averagePoints = Math.round(
+            users.reduce((sum, user) => sum + (user.points || 0), 0) /
+              totalUsers,
+          );
+
+          // Update statistics
+          document.getElementById("totalUsers").textContent = totalUsers;
+          document.getElementById("topPoints").textContent = topPoints;
+          document.getElementById("averagePoints").textContent = averagePoints;
+          statCards.style.display = "grid";
+
+          // Get current user for highlighting
+          const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+
+          // Populate leaderboard
+          leaderboardBody.innerHTML = "";
+          users.forEach((user, index) => {
+            const rank = index + 1;
+            const row = createLeaderboardRow(user, rank, currentUser.user_id);
+            leaderboardBody.appendChild(row);
+          });
+
+          // Show leaderboard content
+          leaderboardContent.style.display = "block";
+        } catch (error) {
+          console.error("Error loading leaderboard:", error);
+          loadingState.style.display = "none";
+
+          // ✅ Check if it's an auth error (CONSISTENT HANDLING)
+          if (
+            error.message.includes("401") ||
+            error.message.includes("403") ||
+            error.message.includes("Authentication")
+          ) {
+            handleExpiredToken("leaderboard.html");
+            return;
+          }
+
+          showToast("Failed to load leaderboard. Please try again.", "error");
+        }
+      }
+
+      // Create leaderboard row
+      function createLeaderboardRow(user, rank, currentUserId) {
+        const row = document.createElement("tr");
+        row.style.borderBottom = "1px solid var(--warm-sand)";
+        row.style.transition = "all 0.3s ease";
+
+        // Highlight current user's row
+        if (user.user_id === currentUserId) {
+          row.style.background = "rgba(168, 181, 160, 0.15)";
+          row.style.borderLeft = "4px solid var(--sage-green)";
+        }
+
+        // Rank badge
+        let rankIcon = rank;
+        let rankColor = "var(--charcoal)";
+        if (rank === 1) {
+          rankIcon = "🥇";
+          rankColor = "#FFD700";
+        } else if (rank === 2) {
+          rankIcon = "🥈";
+          rankColor = "#C0C0C0";
+        } else if (rank === 3) {
+          rankIcon = "🥉";
+          rankColor = "#CD7F32";
+        }
+
+        // Get saved avatar or use first letter
+        const savedAvatar = localStorage.getItem("userAvatar");
+        const avatarDisplay =
+          user.user_id === currentUserId && savedAvatar
+            ? savedAvatar
+            : user.username
+              ? user.username.charAt(0).toUpperCase()
+              : "?";
+
+        // Format date
+        const joinDate = user.created_at
+          ? new Date(user.created_at).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })
+          : "Unknown";
+
+        // Get points
+        const points = user.points || 0;
+
+        row.innerHTML = `
+                <td style="padding: 15px; font-size: 24px; text-align: center; color: ${rankColor}">
+                    ${rankIcon}
+                </td>
+                <td style="padding: 15px">
+                    <div style="display: flex; align-items: center; gap: 15px">
+                        <div style="
+                            width: 45px;
+                            height: 45px;
+                            border-radius: 50%;
+                            background: linear-gradient(135deg, var(--sage-green), var(--soft-eucalyptus));
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 20px;
+                            font-weight: 700;
+                            color: white;
+                            flex-shrink: 0;
+                        ">
+                            ${avatarDisplay}
+                        </div>
+                        <div>
+                            <div style="font-weight: 600; color: var(--deep-forest); font-size: 16px;">
+                                ${user.username}
+                                ${user.user_id === currentUserId ? '<span style="color: var(--sage-green); font-weight: normal; font-size: 12px; margin-left: 5px;">(You)</span>' : ""}
+                                ${rank === 1 ? '<span style="margin-left: 5px;">👑</span>' : ""}
+                            </div>
+                            <div style="font-size: 13px; color: var(--charcoal); opacity: 0.7; margin-top: 2px;">
+                                ${user.email || "No email"}
+                            </div>
+                        </div>
+                    </div>
+                </td>
+                <td style="padding: 15px">
+                    <span style="
+                        background: var(--soft-eucalyptus);
+                        color: var(--deep-forest);
+                        padding: 6px 12px;
+                        border-radius: 20px;
+                        font-weight: 600;
+                        font-size: 14px;
+                    ">
+                        ⭐ ${points}
+                    </span>
+                </td>
+                <td style="padding: 15px; color: var(--charcoal); opacity: 0.8;">
+                    ${joinDate}
+                </td>
+            `;
+
+        // Add hover effect
+        row.addEventListener("mouseenter", () => {
+          if (user.user_id !== currentUserId) {
+            row.style.background = "var(--soft-cream)";
+          }
+        });
+
+        row.addEventListener("mouseleave", () => {
+          if (user.user_id !== currentUserId) {
+            row.style.background = "transparent";
+          }
+        });
+
+        return row;
+      }
+    </script>
+    <footer class="wellness-footer">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h3 class="footer-logo">🌱 Wellness Garden</h3>
+          <p class="footer-tagline">Grow your health, bloom your life</p>
+          <div class="footer-social">
+            <a href="#" class="social-link" title="Instagram">📷</a>
+            <a href="#" class="social-link" title="Twitter">🐦</a>
+            <a href="#" class="social-link" title="Facebook">📘</a>
+            <a href="#" class="social-link" title="Email">📧</a>
+          </div>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Quick Links</h4>
+          <ul class="footer-links">
+            <li><a href="dashboard.html">Dashboard</a></li>
+            <li><a href="garden.html">My Garden</a></li>
+            <li><a href="plants.html">Plant Catalog</a></li>
+            <li><a href="challenges.html">Challenges</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Resources</h4>
+          <ul class="footer-links">
+            <li><a href="#">Wellness Tips</a></li>
+            <li><a href="#">Community</a></li>
+            <li><a href="#">Blog</a></li>
+            <li><a href="#">Support</a></li>
+          </ul>
+        </div>
+
+        <div class="footer-section">
+          <h4 class="footer-heading">Stay Connected</h4>
+          <p class="footer-text">Get wellness tips and updates!</p>
+          <div class="footer-newsletter">
+            <input
+              type="email"
+              placeholder="Your email"
+              class="newsletter-input"
+            />
+            <button class="newsletter-btn">Subscribe</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <p class="footer-copyright">
+          © 2026 Wellness Garden. Made with 💚 for your wellness journey
+        </p>
+        <div class="footer-bottom-links">
+          <a href="#">Privacy Policy</a>
+          <span class="separator">•</span>
+          <a href="#">Terms of Service</a>
+          <span class="separator">•</span>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

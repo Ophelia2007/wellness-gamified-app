@@ -144,14 +144,14 @@ async function waterPlant(gardenId) {
         const data = await response.json();
 
         if (response.ok) {
-            alert('💧 Plant watered successfully! ' + data.message);
+            showToast('💧 Plant watered successfully! ' + data.message, 'success');
             loadGarden(); // Reload garden to show updated growth
         } else {
-            alert(data.message || 'Failed to water plant');
+            showToast(data.message || 'Failed to water plant', 'error');
         }
     } catch (error) {
         console.error('Error watering plant:', error);
-        alert('An error occurred. Please try again.');
+        showToast('An error occurred. Please try again.', 'error');
     }
 }
 
@@ -170,14 +170,14 @@ async function removePlant(gardenId, nickname) {
         });
 
         if (response.status === 204 || response.ok) {
-            alert(`🗑️ "${nickname}" has been removed from your garden.`);
+            showToast(`🗑️ "${nickname}" has been removed from your garden.`, 'success');
             loadGarden(); // Reload garden
         } else {
             const data = await response.json();
-            alert(data.message || 'Failed to remove plant');
+            showToast(data.message || 'Failed to remove plant', 'error');
         }
     } catch (error) {
         console.error('Error removing plant:', error);
-        alert('An error occurred. Please try again.');
+        showToast('An error occurred. Please try again.', 'error');
     }
 }
