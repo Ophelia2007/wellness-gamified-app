@@ -145,12 +145,11 @@
 
             // Update localStorage
             saveUser(userData);
-          } else {
-            // Fallback to cached data
-            console.log("⚠️ Using cached points");
-            currentUserPoints = user.points || 0;
-            document.getElementById("userPoints").textContent =
-              currentUserPoints;
+          } else if (response.status === 401 || response.status === 403) {
+            // ✅ Token expired
+            console.log("🔒 Token expired while loading points");
+            handleExpiredToken("plants.html");
+            return;
           }
         } catch (error) {
           console.error("❌ Error loading user points:", error);
@@ -173,7 +172,14 @@
             },
           );
 
-          if (!response.ok) throw new Error("Failed to load plants");
+          if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+              // ✅ Token expired
+              console.log("🔒 Token expired while loading catalog");
+              handleExpiredToken("plants.html");
+              return;
+            }
+          }
 
           const plants = await response.json();
           console.log("✅ Plants loaded:", plants.length);
@@ -279,8 +285,11 @@
               alert(`🎉 Success! ${nickname} has been planted in your garden!`);
               closeModal();
               window.location.href = "garden.html";
-            } else {
-              alert(data.message || "Failed to plant seed");
+            } else if (response.status === 401 || response.status === 403) {
+              // ✅ Token expired
+              closeModal();
+              handleExpiredToken("plants.html");
+              return;
             }
           } catch (error) {
             console.error("❌ Error planting:", error);

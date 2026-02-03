@@ -67,6 +67,23 @@ function logout() {
     window.location.href = 'index.html';
 }
 
+// Handle expired token with user notification
+function handleExpiredToken(returnPage = '') {
+    clearAuth();
+    
+    // Show toast notification
+    showToast('⏰ Your session has expired. Please login again.', 'warning');
+    
+    // Redirect to login after short delay
+    setTimeout(() => {
+        // Store the page user was trying to access (optional for future "return to" feature)
+        if (returnPage) {
+            sessionStorage.setItem('returnTo', returnPage);
+        }
+        window.location.href = 'login.html';
+    }, 2000);
+}
+
 // Format date
 function formatDate(dateString) {
     const date = new Date(dateString);
@@ -108,6 +125,7 @@ function capitalize(str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
+
 // ============================================
 // TOAST NOTIFICATION SYSTEM
 // ============================================
@@ -142,64 +160,4 @@ function showToast(message, type = 'success') {
         toast.classList.remove('toast-show');
         setTimeout(() => toast.remove(), 300);
     }, 3000);
-}
-
-// ============================================
-// TOKEN EXPIRATION HANDLER
-// ============================================
-
-/**
- * Handle expired or invalid token consistently across all pages
- */
-function handleExpiredToken(currentPage = null) {
-    console.log('🔒 Token expired or invalid');
-    
-    // Save the current page to redirect back after login
-    if (currentPage) {
-        localStorage.setItem('redirectAfterLogin', currentPage);
-    } else {
-        // Auto-detect current page
-        const path = window.location.pathname;
-        const page = path.substring(path.lastIndexOf('/') + 1);
-        if (page && page !== 'login.html' && page !== 'index.html') {
-            localStorage.setItem('redirectAfterLogin', page);
-        }
-    }
-    
-    // Show toast notification
-    showToast('🔒 Session expired. Redirecting to login...', 'warning');
-    
-    // Clear auth data
-    clearAuth();
-    
-    // Redirect after 2 seconds
-    setTimeout(() => {
-        window.location.href = 'login.html';
-    }, 2000);
-}
-
-/**
- * Check response status and handle auth errors
- */
-function checkAuthResponse(response) {
-    if (response.status === 401 || response.status === 403) {
-        handleExpiredToken();
-        return false;
-    }
-    return true;
-}
-
-/**
- * Redirect back to the page user was trying to access after login
- */
-function redirectAfterLogin() {
-    const redirectPage = localStorage.getItem('redirectAfterLogin');
-    localStorage.removeItem('redirectAfterLogin');
-    
-    if (redirectPage && redirectPage !== 'login.html') {
-        console.log('Redirecting back to:', redirectPage);
-        window.location.href = redirectPage;
-    } else {
-        window.location.href = 'dashboard.html';
-    }
 }

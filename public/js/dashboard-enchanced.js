@@ -335,3 +335,81 @@ function formatTimeAgo(dateString) {
 
 // Load dashboard on page load
 loadDashboard();
+// ============================================
+// DAILY INSPIRATION QUOTES
+// ============================================
+
+function loadDailyQuote() {
+  const quotes = [
+    {
+      text: "The greatest wealth is health.",
+      author: "Virgil"
+    },
+    {
+      text: "Take care of your body. It's the only place you have to live.",
+      author: "Jim Rohn"
+    },
+    {
+      text: "Health is not valued till sickness comes.",
+      author: "Thomas Fuller"
+    },
+    {
+      text: "To keep the body in good health is a duty... otherwise we shall not be able to keep our mind strong and clear.",
+      author: "Buddha"
+    },
+    {
+      text: "A healthy outside starts from the inside.",
+      author: "Robert Urich"
+    },
+    {
+      text: "Your body hears everything your mind says. Stay positive.",
+      author: "Naomi Judd"
+    },
+    {
+      text: "Wellness is the complete integration of body, mind, and spirit.",
+      author: "Greg Anderson"
+    },
+    {
+      text: "An apple a day keeps the doctor away.",
+      author: "Proverb"
+    },
+    {
+      text: "He who has health has hope, and he who has hope has everything.",
+      author: "Arabian Proverb"
+    },
+    {
+      text: "Good health and good sense are two of life's greatest blessings.",
+      author: "Publilius Syrus"
+    },
+    {
+      text: "The first wealth is health.",
+      author: "Ralph Waldo Emerson"
+    },
+    {
+      text: "Happiness is the highest form of health.",
+      author: "Dalai Lama"
+    }
+  ];
+  
+  // Get quote based on day of year (so it changes daily)
+  const now = new Date();
+  const start = new Date(now.getFullYear(), 0, 0);
+  const diff = now - start;
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
+  
+  const quoteIndex = dayOfYear % quotes.length;
+  const todaysQuote = quotes[quoteIndex];
+  
+  // Update the quote on the page
+  const quoteElement = document.getElementById('dailyQuote');
+  const authorElement = document.getElementById('quoteAuthor');
+  
+  if (quoteElement && authorElement) {
+    quoteElement.textContent = `"${todaysQuote.text}"`;
+    authorElement.textContent = `- ${todaysQuote.author}`;
+  }
+}
+
+// Load quote on page load
+loadDailyQuote();

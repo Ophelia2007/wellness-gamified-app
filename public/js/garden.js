@@ -21,14 +21,14 @@ async function loadGarden() {
             }
         });
 
-        if (!response.ok) {
-            if (response.status === 401 || response.status === 403) {
-                // Token expired or invalid
-                logout();
-                return;
-            }
-            throw new Error('Failed to load garden');
-        }
+if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+        // ✅ Token expired or invalid - show notification
+        console.log('🔒 Token expired while loading garden');
+        handleExpiredToken('garden.html');
+        return;
+    }
+}
 
         const plants = await response.json();
         displayGarden(plants);
@@ -146,9 +146,11 @@ async function waterPlant(gardenId) {
         if (response.ok) {
             showToast('💧 Plant watered successfully! ' + data.message, 'success');
             loadGarden(); // Reload garden to show updated growth
-        } else {
-            showToast(data.message || 'Failed to water plant', 'error');
-        }
+        } else if (response.status === 401 || response.status === 403) {
+    // ✅ Token expired
+    handleExpiredToken('garden.html');
+    return;
+}
     } catch (error) {
         console.error('Error watering plant:', error);
         showToast('An error occurred. Please try again.', 'error');
@@ -172,10 +174,11 @@ async function removePlant(gardenId, nickname) {
         if (response.status === 204 || response.ok) {
             showToast(`🗑️ "${nickname}" has been removed from your garden.`, 'success');
             loadGarden(); // Reload garden
-        } else {
-            const data = await response.json();
-            showToast(data.message || 'Failed to remove plant', 'error');
-        }
+        } else if (response.status === 401 || response.status === 403) {
+    // ✅ Token expired
+    handleExpiredToken('garden.html');
+    return;
+}
     } catch (error) {
         console.error('Error removing plant:', error);
         showToast('An error occurred. Please try again.', 'error');

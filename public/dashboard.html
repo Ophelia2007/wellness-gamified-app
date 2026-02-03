@@ -571,6 +571,14 @@
 
             // NEW: Update badges
             updateBadges(currentPoints);
+          } else if (
+            userResponse.status === 401 ||
+            userResponse.status === 403
+          ) {
+            // ✅ Handle expired token
+            console.log("🔒 Token expired while loading dashboard");
+            handleExpiredToken("dashboard.html");
+            return;
           } else {
             console.error(
               "❌ Failed to fetch fresh user data, using cached data",
@@ -643,6 +651,11 @@
 
             // NEW: Calculate garden health
             calculateGardenHealth(plants.length, bloomedCount);
+          } else if (response.status === 401 || response.status === 403) {
+            // ✅ Handle expired token
+            console.log("🔒 Token expired while loading garden");
+            handleExpiredToken("dashboard.html");
+            return;
           }
         } catch (error) {
           console.error("❌ Error loading garden stats:", error);
