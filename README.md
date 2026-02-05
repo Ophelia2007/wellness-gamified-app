@@ -18,7 +18,7 @@ The Digital Garden transforms wellness into a visual journey where users grow vi
 
 **MVC Pattern with Callback-Based Design**
 
-BED-CA1-OPHELIA2007/
+BED-CA2-OPHELIA2007/
 ├── src/
 │ ├── configs/
 │ │ ├── createSchema.js # Database schema creation
