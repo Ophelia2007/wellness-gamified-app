@@ -12,16 +12,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ST0503-BED/bed-ca1-Ophelia2007.git"
+    "url": "git+https://github.com/ST0503-BED/bed-ca2-Ophelia2007.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/ST0503-BED/bed-ca1-Ophelia2007/issues"
+    "url": "https://github.com/ST0503-BED/bed-ca2-Ophelia2007/issues"
   },
-  "homepage": "https://github.com/ST0503-BED/bed-ca1-Ophelia2007#readme",
+  "homepage": "https://github.com/ST0503-BED/bed-ca2-Ophelia2007#readme",
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
