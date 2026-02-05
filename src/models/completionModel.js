@@ -39,9 +39,13 @@ module.exports.printCompletionRecord = (data, callback) => {
 // Retrieves a list of users and their submission details for a specific challenge
 module.exports.getUsersByChallengeId = (data, callback) => {
   const SQLSTATEMENT = `
-    SELECT user_id, details
-    FROM usercompletion
-    WHERE challenge_id = ?;
+    SELECT 
+      uc.user_id,
+      uc.details,
+      u.username
+    FROM usercompletion uc
+    LEFT JOIN user u ON uc.user_id = u.user_id
+    WHERE uc.challenge_id = ?
   `;
   const VALUES = [data.challengeId];
   pool.query(SQLSTATEMENT, VALUES, callback);

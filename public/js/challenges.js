@@ -97,6 +97,9 @@ function createChallengeCard(challenge) {
             <button class="btn btn-success btn-sm" onclick="completeChallenge(${challenge.challenge_id}, '${challenge.description.replace(/'/g, "\\'")}')">
                 ✓ Complete
             </button>
+            <button class="btn btn-info btn-sm" onclick="viewCompletions(${challenge.challenge_id}, '${challenge.description.replace(/'/g, "\\'")}')">
+                👥 View Completions
+            </button>
             ${isCreator ? `
                 <button class="btn btn-warning btn-sm" onclick="editChallenge(${challenge.challenge_id})">
                     ✏️ Edit
@@ -302,6 +305,197 @@ async function getChallengeById(challengeId) {
     } catch (error) {
         console.error('Error fetching challenge:', error);
         return null;
+    }
+}
+
+// ============================================
+// VIEW CHALLENGE COMPLETIONS
+// ============================================
+
+async function viewCompletions(challengeId, challengeDescription) {
+    console.log('Viewing completions for challenge:', challengeId);
+    
+    const currentToken = getToken();
+    
+    if (!currentToken) {
+        showToast('Please log in to view completions', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`${API_URL}/challenges/${challengeId}`, {
+            headers: {
+                'Authorization': `Bearer ${currentToken}`
+            }
+        });
+        
+        console.log('Completions response status:', response.status);
+        
+        // Handle 404 (no completions) gracefully
+        if (response.status === 404) {
+            console.log('No completions found for this challenge');
+            showCompletionsModal(challengeDescription, []);
+            return;
+        }
+        
+        if (!response.ok) {
+            throw new Error('Failed to load completions');
+        }
+        
+        // The backend returns an array directly
+        const completions = await response.json();
+        console.log('Completions data:', completions);
+        
+        // Show modal with completions
+        showCompletionsModal(challengeDescription, Array.isArray(completions) ? completions : []);
+        
+    } catch (error) {
+        console.error('Error loading completions:', error);
+        showToast('Failed to load completions. Please try again.', 'error');
+    }
+}
+
+function showCompletionsModal(challengeDescription, completions) {
+    // Remove existing modal if any
+    const existingModal = document.getElementById('completionsModal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Create modal
+    const modal = document.createElement('div');
+    modal.id = 'completionsModal';
+    modal.className = 'modal';
+    modal.style.display = 'block';
+    
+    let completionsHTML = '';
+    
+    if (completions.length === 0) {
+        completionsHTML = `
+            <div style="text-align: center; padding: 40px; color: var(--charcoal);">
+                <div style="font-size: 60px; margin-bottom: 20px;">🌱</div>
+                <h3>No Completions Yet</h3>
+                <p style="margin-top: 10px; opacity: 0.8;">Be the first to complete this challenge!</p>
+            </div>
+        `;
+    } else {
+        completionsHTML = `
+            <div style="margin-bottom: 20px;">
+                <p style="color: var(--charcoal); margin-bottom: 15px;">
+                    <strong>${completions.length}</strong> ${completions.length === 1 ? 'person has' : 'people have'} completed this challenge! 🎉
+                </p>
+            </div>
+            <div style="max-height: 400px; overflow-y: auto;">
+                ${completions.map((completion, index) => {
+                    // Get username - handle different possible field names
+                    const displayName = completion.username || `User ${completion.user_id}`;
+                    const completionDate = completion.completion_date || new Date().toISOString();
+                    
+                    return `
+                    <div style="
+                        display: flex;
+                        align-items: center;
+                        gap: 15px;
+                        padding: 15px;
+                        margin-bottom: 10px;
+                        background: ${index % 2 === 0 ? 'var(--soft-cream)' : 'white'};
+                        border-radius: 12px;
+                        border-left: 4px solid var(--sage-green);
+                    ">
+                        <div style="
+                            width: 45px;
+                            height: 45px;
+                            border-radius: 50%;
+                            background: linear-gradient(135deg, var(--sage-green), var(--soft-eucalyptus));
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 20px;
+                            font-weight: 700;
+                            color: white;
+                            flex-shrink: 0;
+                        ">
+                            ${displayName.charAt(0).toUpperCase()}
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; color: var(--deep-forest); font-size: 16px;">
+                                ${displayName}
+                            </div>
+                            <div style="font-size: 13px; color: var(--charcoal); opacity: 0.7; margin-top: 2px;">
+                                Completed on ${formatDate(completionDate)}
+                            </div>
+                            ${completion.details ? `
+                                <div style="font-size: 12px; color: var(--charcoal); margin-top: 5px; font-style: italic;">
+                                    "${completion.details}"
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div style="
+                            background: var(--soft-eucalyptus);
+                            color: var(--deep-forest);
+                            padding: 6px 12px;
+                            border-radius: 20px;
+                            font-weight: 600;
+                            font-size: 14px;
+                        ">
+                            ✓ Done
+                        </div>
+                    </div>
+                `}).join('')}
+            </div>
+        `;
+    }
+    
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="close" onclick="closeCompletionsModal()">&times;</span>
+            <h2 style="color: var(--deep-forest); margin-bottom: 10px;">
+                👥 Challenge Completions
+            </h2>
+            <p style="color: var(--charcoal); margin-bottom: 25px; padding: 15px; background: var(--soft-cream); border-radius: 12px; border-left: 4px solid var(--sage-green);">
+                <strong>Challenge:</strong> ${challengeDescription}
+            </p>
+            ${completionsHTML}
+            <div style="margin-top: 25px; text-align: center;">
+                <button class="btn btn-secondary" onclick="closeCompletionsModal()">
+                    Close
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close on outside click
+    modal.addEventListener('click', function(event) {
+        if (event.target === modal) {
+            closeCompletionsModal();
+        }
+    });
+}
+
+function closeCompletionsModal() {
+    const modal = document.getElementById('completionsModal');
+    if (modal) {
+        modal.remove();
+    }
+}
+
+// Helper function to format date
+function formatDate(dateString) {
+    if (!dateString) return 'Unknown';
+    
+    try {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    } catch (error) {
+        return 'Unknown';
     }
 }
 
