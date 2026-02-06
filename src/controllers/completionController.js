@@ -25,85 +25,61 @@ module.exports.createCompletionRecord = (req, res, next) => {
 };
 
 module.exports.awardPointsToUser = (req, res, next) => {
-  const data = {
-    userId: req.completionData.userId,
-    points: req.challengePoints
-  };
+  const userId = req.completionData.userId;
+  const earnedPoints = req.challengePoints;
 
-  const callback = (error, results, fields) => {
-    if (error) {
-      console.error("Error awardPoints:", error);
-      return res.status(500).json({
-        message: "Error awarding points",
-        error: error.message
-      });
+  // 1️⃣ GET USER FIRST (BEFORE UPDATE)
+  usersModel.selectById({ userId }, (err, results) => {
+    if (err || results.length === 0) {
+      return res.status(500).json({ message: "User not found" });
     }
 
-    // Get updated user info for email
-    usersModel.selectById({ userId: req.completionData.userId }, (error, userResults) => {
-      if (error) {
-        console.error("Error fetching user for email:", error);
-        // Don't fail if email fails, just log it
-        req.emailFailed = true;
-        next();
-        return;
-      }
+    const user = results[0];
+    const oldPoints = user.points || 0;
+    const newPoints = oldPoints + earnedPoints;
 
-      if (userResults.length === 0) {
-        console.log("⚠️ Cannot send email: User not found");
-        req.emailFailed = true;
-        next();
-        return;
-      }
-
-      const user = userResults[0];
-      
-      // Check if user has email address
-      if (!user.email || user.email.trim() === '') {
-        console.log(`⚠️ User ${user.username} (ID: ${user.user_id}) has no email. Skipping email notification.`);
-        req.emailFailed = true;
-        next();
-        return;
-      }
-      
-      console.log(`📧 Preparing to send email to: ${user.email}`);
-      
-      // Prepare email data
-      const emailData = {
-        username: user.username,
-        email: user.email,
-        oldPoints: user.points || 0,
-        newPoints: (user.points || 0) + req.challengePoints
-      };
-      
-      const challengeInfo = {
-        description: req.challengeDescription || "Wellness Challenge",
-        points: req.challengePoints
-      };
-      
-      console.log("Email data:", emailData);
-      console.log("Challenge info:", challengeInfo);
-      
-      // Send completion email (don't wait for it to complete)
-      emailService.sendChallengeCompletionEmail(emailData, challengeInfo, (emailError, info) => {
-        if (emailError) {
-          console.error("❌ Error sending completion email:", emailError.message);
-          req.emailFailed = true;
-        } else {
-          console.log(`✅ Completion email sent to: ${user.email}`);
-          if (info && info.messageId) {
-            console.log(`   MessageID: ${info.messageId}`);
-          }
-          req.emailFailed = false;
+    // 2️⃣ INCREMENT POINTS
+    usersModel.awardPointsToUser(
+      { userId, points: earnedPoints },
+      (error) => {
+        if (error) {
+          console.error("Error awardPoints:", error);
+          return res.status(500).json({
+            message: "Error awarding points",
+            error: error.message
+          });
         }
-        // Email sending is async, we don't wait for it to complete
-      });
-      
-      next();
-    });
-  };
 
-  usersModel.awardPointsToUser(data, callback);
+        // 3️⃣ PREP EMAIL DATA (CORRECT NOW)
+        if (user.email && user.email.trim() !== '') {
+          const emailData = {
+            username: user.username,
+            email: user.email,
+            oldPoints,
+            newPoints
+          };
+
+          const challengeInfo = {
+            description: req.challengeDescription || "Wellness Challenge",
+            points: earnedPoints
+          };
+
+          emailService.sendChallengeCompletionEmail(
+            emailData,
+            challengeInfo,
+            () => {}
+          );
+        }
+
+        // 4️⃣ SEND CORRECT RESPONSE TO FRONTEND
+        res.json({
+          success: true,
+          points: earnedPoints,
+          totalPoints: newPoints
+        });
+      }
+    );
+  });
 };
 
 // Step 5: Final Step - Return the completion record WITH POINTS

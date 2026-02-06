@@ -108,9 +108,16 @@ module.exports.checkUserExists = (data, callback) => {
 // AWARD POINTS TO USER
 // ##############################################################
 
-// Update operation to increment existing points by a specific amount
+// ##############################################################
+// AWARD POINTS TO USER (INCREMENT, NOT OVERWRITE)
+// ##############################################################
 module.exports.awardPointsToUser = (data, callback) => {
-  const SQLSTATEMENT = `UPDATE user SET points = points + ? WHERE user_id = ?;`;
+  const SQLSTATEMENT = `
+    UPDATE user
+    SET points = points + ?
+    WHERE user_id = ?;
+  `;
+
   const VALUES = [data.points, data.userId];
   pool.query(SQLSTATEMENT, VALUES, callback);
 };
