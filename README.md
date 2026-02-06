@@ -67,6 +67,7 @@ BED-CA2-OPHELIA2007/
 │   │   └── profile.js            # User profile
 │   ├── images/
 │   │   └── background.jpg        # Background image
+│   │   └── background2.gif        # Background image for the login page and register page
 │   ├── index.html                # Landing page
 │   ├── login.html                # Login page
 │   ├── register.html             # Registration page
