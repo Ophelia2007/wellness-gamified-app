@@ -864,6 +864,4 @@ Academic project for **ST0503 Backend Web Development (2025/2026 S2)**
 **Built with ❤️ for wellness and mindfulness**
 
 _May your digital garden flourish as you nurture your wellbeing!_ 🌿✨
-#   w e l l n e s s - g a m i f i e d - a p p  
- #   w e l l n e s s - g a m i f i e d - a p p  
- 
+#
